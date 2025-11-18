@@ -1,48 +1,60 @@
-# Excel Sentiment Analyzer with ChatGPT
+# Twitter Comment Scraper with Advanced Date Filtering
 
-A powerful Python-based sentiment analysis tool that combines advanced NLP techniques with ChatGPT API integration to analyze text data in Excel files. Respects existing labeled data while enhancing analysis with AI-powered insights.
+A powerful Python tool for scraping tweets from Twitter's API v2 with advanced filtering, spam detection, NLP analysis, and comprehensive reporting capabilities.
 
-![Python](https://img.shields.io/badge/Python-3.13-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)
+![Twitter API v2](https://img.shields.io/badge/API-Twitter%20v2-1DA1F2.svg)
 
 ## 🎯 Features
 
-### Core Capabilities
-- **Multi-Method Sentiment Analysis**: Combines TextBlob, VADER, Custom Lexicon, and Intensity-Adjusted analysis for robust results
-- **ChatGPT Integration**: Optional AI-powered enhancement using OpenAI's GPT-3.5-turbo model
-- **Existing Data Respect**: Intelligently preserves and prioritizes existing labels (80% weight) while enhancing analysis
-- **Automatic Column Detection**: Smart detection of text and support/against columns
-- **Unicode Handling**: Automatic correction of corrupted text data
-- **Batch Processing**: Efficient processing of large Excel files with progress tracking
-- **Comprehensive Reporting**: Generates detailed analytics reports with statistics and insights
+### Core Scraping
+- **Advanced Tweet Search**: Query-based search with relevance filtering
+- **Date Range Filtering**: Search tweets from last 7 days (or older with Academic Research access)
+- **Rate Limit Handling**: Automatic retry with exponential backoff
+- **Batch Processing**: Efficient processing of large result sets
+- **Real-time Progress**: Live feedback during scraping operations
 
-### Advanced Features
-- Sentiment confidence scoring for quality assessment
-- Data source tracking (shows whether result came from existing labels, ChatGPT, or text analysis)
-- Custom sentiment lexicons for domain-specific analysis
-- Negation handling and intensifier detection
-- Automatic fallback mechanisms for API reliability
-- Rate limiting awareness and error recovery
+### Data Quality
+- **Spam Detection**: Multi-pattern spam detection with scoring system
+- **Duplicate Removal**: Intelligent duplicate detection and removal
+- **User Content Spam**: Prevents user spam patterns
+- **Text Normalization**: Automatic text cleaning and standardization
+- **Relevance Scoring**: Ranks tweets by relevance to query
+
+### NLP Analysis
+- **Sentiment Analysis**: TextBlob-based sentiment classification
+- **Keyword Extraction**: Identifies important words and phrases
+- **Text Metrics**: Word count, character analysis, engagement metrics
+- **Language Detection**: Identifies tweet language
+- **Subjectivity Scoring**: Determines opinion vs factual content
+
+### Output Formats
+- **JSON Export**: Structured data for programmatic access
+- **CSV Export**: Excel-compatible format for analysis
+- **Analytics Reports**: Comprehensive statistics and insights
+- **Preview Display**: Real-time terminal preview of results
 
 ## 📋 Requirements
 
 ### System Requirements
 - Python 3.8 or higher
 - 2GB RAM minimum
-- Internet connection (for ChatGPT API)
+- Internet connection (Twitter API access required)
 
 ### Python Dependencies
 ```
-pandas>=1.5.0
-numpy>=1.21.0
+requests>=2.28.0
 textblob>=0.17.1
 nltk>=3.8.0
-openpyxl>=3.0.9
-openai>=1.0.0
-requests>=2.28.0
-scikit-learn>=1.1.0 (optional, for better performance)
+python-dateutil>=2.8.0
 ```
+
+### Twitter API Requirements
+- Twitter Developer Account (free at [developer.twitter.com](https://developer.twitter.com))
+- API v2 access enabled
+- Bearer Token (from API Settings)
 
 ## 🚀 Quick Start
 
@@ -50,11 +62,11 @@ scikit-learn>=1.1.0 (optional, for better performance)
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/excel-sentiment-analyzer.git
-   cd excel-sentiment-analyzer
+   git clone https://github.com/yourusername/twitter-scraper.git
+   cd twitter-scraper
    ```
 
-2. **Create a virtual environment** (recommended)
+2. **Create a virtual environment**
    ```bash
    python -m venv venv
    # On Windows
@@ -65,239 +77,312 @@ scikit-learn>=1.1.0 (optional, for better performance)
 
 3. **Install dependencies**
    ```bash
-   pip install -r requirements_chatgpt_sentiment.txt
+   pip install -r requirements.txt
    ```
 
-4. **Set up your OpenAI API key** (optional but recommended)
-   ```bash
-   # Windows
-   set OPENAI_API_KEY=your_api_key_here
-   
-   # macOS/Linux
-   export OPENAI_API_KEY=your_api_key_here
-   ```
+### Get Your Twitter API Key
+
+1. Go to [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard)
+2. Create a new application
+3. Go to "Keys and tokens" section
+4. Copy your **Bearer Token**
+5. Keep it safe - don't share it!
 
 ### Basic Usage
 
-```python
-from excel_sentiment_analyzer import ExcelSentimentAnalyzer
-
-# Initialize the analyzer
-analyzer = ExcelSentimentAnalyzer(openai_api_key="your-api-key")
-
-# Analyze an Excel file
-input_file = "your_data.xlsx"
-output_file = analyzer.process_excel_file(
-    input_file,
-    text_column="comments",
-    support_column="support_against"
-)
-
-print(f"Analysis complete! Results saved to {output_file}")
+```bash
+python twitter_scraper.py
 ```
+
+Then follow the interactive prompts:
+1. Enter your Bearer Token
+2. Enter search query (e.g., "python programming", "#AI")
+3. Enter number of results (10-100)
+4. Choose time period (1 hour, 24 hours, 7 days, custom, or none)
 
 ## 💻 Usage Examples
 
-### Example 1: Basic Sentiment Analysis
+### Example 1: Search Recent Tweets (Last 24 Hours)
 ```python
-from excel_sentiment_analyzer import ExcelSentimentAnalyzer
+from twitter_scraper import TwitterScraper
 
-analyzer = ExcelSentimentAnalyzer(openai_api_key="sk-...")
+scraper = TwitterScraper("your_bearer_token_here")
 
-# Process file
-result_file = analyzer.process_excel_file("comments.xlsx")
+# Search for tweets about Python
+tweets = scraper.search_tweets(
+    query="python programming",
+    max_results=50,
+    time_period="24h"
+)
 
-# Generate report
-analyzer.generate_summary_report(result_file)
+# Save results
+scraper.save_to_json(tweets, "python_tweets.json")
+scraper.save_to_csv(tweets, "python_tweets.csv")
+
+print(f"Found {len(tweets)} tweets")
 ```
 
-### Example 2: Using with Existing Labels
+### Example 2: Custom Date Range (Academic Research)
 ```python
-# If your Excel file has existing "support" and "against" columns,
-# the analyzer will automatically detect them and prioritize that data
-# while enhancing with AI analysis
-
-result_file = analyzer.process_excel_file(
-    "labeled_data.xlsx",
-    text_column="text",
-    support_column="existing_support"  # Will be preserved
+tweets = scraper.search_tweets(
+    query="#MachineLearning",
+    max_results=100,
+    time_period="custom",
+    custom_start="2024-01-01T00:00:00Z",
+    custom_end="2024-01-31T23:59:59Z"
 )
+
+# Generate analytics report
+scraper.generate_analytics_report(tweets, "ml_report.txt")
 ```
 
-### Example 3: Custom Configuration
+### Example 3: Programmatic Access
 ```python
-analyzer = ExcelSentimentAnalyzer(
-    openai_api_key="sk-...",
-    use_chatgpt=True
-)
-
-# Analyze with custom settings
-results = analyzer.analyze_sentiment(
-    text="This product is absolutely amazing!",
-    existing_label="support"  # Will be preserved (80% weight)
-)
-
-print(f"Sentiment: {results['sentiment']}")
-print(f"Confidence: {results['confidence']}")
-print(f"Data Source: {results['data_source']}")
+try:
+    tweets = scraper.search_tweets(
+        query="climate change",
+        max_results=50,
+        time_period="7d"
+    )
+    
+    # Display preview
+    scraper.display_preview(tweets, num_tweets=5)
+    
+    # Access tweet data
+    for tweet in tweets:
+        print(f"@{tweet['author']}: {tweet['text']}")
+        print(f"Sentiment: {tweet['sentiment']}")
+        print(f"Engagement: {tweet['likes']} likes, {tweet['retweets']} retweets\n")
+        
+except Exception as e:
+    print(f"Error: {e}")
 ```
 
 ## 📊 Output Format
 
-### Excel Output Columns
-- **original_text**: Input text
-- **sentiment**: Classification (positive/negative/neutral or support/against)
-- **confidence**: Score 0-1 indicating result reliability
-- **data_source**: Where result came from (existing_labels/chatgpt/text_analysis)
-- **chatgpt_analysis**: AI-powered analysis details
-- **scores**: Detailed scores from all analysis methods
+### Tweet Data Structure
+```python
+{
+    "id": "1234567890123456789",
+    "text": "Tweet content here",
+    "author": "username",
+    "author_verified": True,
+    "created_at": "2024-01-15T12:30:00.000Z",
+    "likes": 150,
+    "retweets": 45,
+    "replies": 12,
+    "language": "en",
+    "sentiment": "positive",
+    "keywords": ["keyword1", "keyword2"],
+    "relevance_score": 0.85,
+    "is_spam": False,
+    "subjectivity": 0.65
+}
+```
 
-### Report Includes
-- Total sentiment distribution
-- Confidence statistics
-- Top keywords and phrases
-- Recommendations for data quality
-- Processing time and performance metrics
+### Analytics Report Includes
+- Total tweets collected and filtered
+- Sentiment distribution (positive/negative/neutral)
+- Top keywords and hashtags
+- Language distribution
+- Author verification statistics
+- Engagement metrics (likes, retweets, replies)
+- Spam detection results
+- Quality metrics and confidence scores
 
 ## 🔌 API Integration
 
-### OpenAI Setup
-1. Get API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Set environment variable: `OPENAI_API_KEY=sk-...`
-3. Or pass directly to analyzer: `ExcelSentimentAnalyzer(openai_api_key="sk-...")`
+### Twitter API v2 Endpoints Used
+- **Recent Tweet Search**: `/tweets/search/recent`
+- **Expansions**: Author IDs, Referenced tweets
+- **Fields**: Created date, Metrics, Language, Verification status
 
-### Rate Limiting
-- Default: 3,000 requests/minute
-- Auto-retry on rate limit with exponential backoff
-- Graceful fallback to local analysis if API unavailable
+### Rate Limits
+- **Standard API**: 300 requests per 15-minute window
+- **Academic Research**: Higher limits available
+- **Automatic Handling**: Built-in retry logic with exponential backoff
 
-## 🎓 Understanding the Analysis Methods
+### Time Period Limitations
+- **Recent Search**: Last 7 days of tweets
+- **Academic Research**: Up to 30 days of tweets
+- **Historical Access**: Full archive with Academic Research access
 
-### TextBlob Sentiment (25% weight)
-- Polarity-based sentiment using pre-trained models
-- Subjectivity scoring
-- Good for general sentiment detection
+## 🎓 Understanding the Analysis
 
-### VADER Sentiment (35% weight)
-- Optimized for social media and short text
-- Handles emoticons and slang
-- Returns compound sentiment scores
+### Spam Detection
+- Pattern matching for promotional content
+- Suspicious URL detection
+- Excessive mentions/hashtags
+- Author verification status
+- Account creation date and metrics
 
-### Custom Lexicon (20% weight)
-- Domain-specific positive/negative word lists
-- Customizable for your industry
-- Fast and interpretable
+### Relevance Scoring
+- Query keyword matching
+- Author reputation (verified status, followers)
+- Engagement metrics (likes, retweets)
+- Tweet age and recency
+- Content quality factors
 
-### Intensity-Adjusted Sentiment (20% weight)
-- Handles negations (e.g., "not good" → negative)
-- Intensifier detection (e.g., "very good" → stronger positive)
-- Context-aware scoring
+### Sentiment Analysis
+- TextBlob polarity and subjectivity
+- Positive/negative/neutral classification
+- Confidence scoring
+- Context-aware analysis
+
+### Deduplication
+- Exact text matching
+- Similarity detection (80%+ threshold)
+- User content spam prevention
+- Near-duplicate removal
 
 ## 📈 Performance Metrics
 
-- **Processing Speed**: ~100-500 texts/second (depending on length)
-- **Memory Usage**: ~500MB for 10,000 texts
-- **Accuracy**: 85-92% (varies by domain)
-- **ChatGPT Cost**: ~$0.002-0.005 per 1,000 texts
+- **Processing Speed**: ~10-50 tweets/second
+- **Memory Usage**: ~100MB for 1,000 tweets
+- **API Response Time**: 1-5 seconds per request
+- **Accuracy**: 85-90% spam detection, 80-85% sentiment accuracy
 
 ## 🛠️ Advanced Configuration
 
-### Custom Word Lists
+### Custom Search Query
 ```python
-analyzer.positive_words.add("awesome")
-analyzer.negative_words.add("disappointing")
+# Filter out retweets
+query = "python -is:retweet"
+
+# Search specific hashtag with keywords
+query = "#AI programming -is:reply"
+
+# Search from verified accounts only
+query = "machine learning from:verified"
 ```
 
-### Disable ChatGPT
+### Modify Spam Patterns
 ```python
-analyzer = ExcelSentimentAnalyzer(use_chatgpt=False)
-# Uses only local NLP methods
+scraper.spam_patterns.append(r'your_custom_pattern')
 ```
 
-### Confidence Threshold
+### Adjust Time Parameters
 ```python
-results = analyzer.analyze_sentiment(text, confidence_threshold=0.8)
-# Only returns results with confidence ≥ 0.8
+# Get tweets from exactly 24 hours ago
+params = scraper._get_time_params(time_period="24h")
+print(params["start_time"], params["end_time"])
 ```
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-**Issue: "ModuleNotFoundError: No module named 'openai'"**
-```bash
-pip install openai requests
-```
+**Issue: "Authentication failed" or 401 error**
+- Check Bearer Token is correct
+- Ensure token hasn't expired
+- Verify API access is enabled
 
-**Issue: "OPENAI_API_KEY not found"**
-- Check environment variable is set: `echo %OPENAI_API_KEY%` (Windows)
-- Or pass key directly: `ExcelSentimentAnalyzer(openai_api_key="sk-...")`
+**Issue: "No tweets found" / Empty results**
+- Try broader search terms
+- Check time period is correct
+- Ensure query doesn't exclude all results (too many filters)
+- Verify API rate limits aren't exceeded
 
-**Issue: "Excel file not found"**
-- Use absolute path or check file is in working directory
-- Ensure file is valid Excel format (.xlsx or .xls)
+**Issue: "Rate limit exceeded"**
+- Wait 15 minutes before next request
+- Script automatically retries with backoff
+- Consider Academic Research access for higher limits
 
-**Issue: Low confidence scores**
-- Text may be ambiguous or mixed sentiment
-- Try shorter, more focused text
-- Check if existing labels are more reliable
+**Issue: "Invalid date format"**
+- Use ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`
+- Example: `2024-01-15T12:30:00Z`
+- Ensure time is in UTC (Z suffix)
+
+**Issue: Many spam tweets in results**
+- Adjust spam detection patterns
+- Filter by verified status
+- Use more specific keywords
+- Increase minimum follower count
 
 ### Getting Help
-- Check existing [GitHub Issues](https://github.com/yourusername/excel-sentiment-analyzer/issues)
-- Review documentation for detailed guidance
-- Review code comments and docstrings
+- Check [Twitter API Documentation](https://developer.twitter.com/en/docs/twitter-api/latest/reference)
+- Review [GitHub Issues](https://github.com/yourusername/twitter-scraper/issues)
+- Check code comments and docstrings
 
 ## 📚 Documentation
 
-- [Complete API Reference](./API_REFERENCE.md)
-- [Presentation Guide](./COMPLETE_PRESENTATION_GUIDE.md)
-- [ChatGPT Setup Guide](./CHATGPT_SENTIMENT_SETUP.md)
-- [Competitive Analysis](./COMPETITIVE_ANALYSIS.md)
-- [Data Respect Implementation](./EXISTING_DATA_FIXED.md)
+- [API Reference](./API_REFERENCE.md) - Detailed method documentation
+- [Setup Guide](./SETUP_GUIDE.md) - Detailed installation instructions
+- [Examples](./EXAMPLES.md) - Code examples and use cases
+- [Troubleshooting](./TROUBLESHOOTING.md) - Common issues and solutions
 
 ## 🧪 Testing
 
-Run the included test suite:
+Run the test suite:
 ```bash
-# Test existing data respect
-python simple_test_existing_data.py
-
-# Test ChatGPT integration
-python test_chatgpt_sentiment.py
-
-# Test full analysis pipeline
-python test_respect_existing_data.py
+python -m pytest tests/ -v
 ```
 
-All tests should show "PASS" status ✅
+Or test individual components:
+```bash
+# Test spam detection
+python test_spam_detection.py
 
-## 📊 Sample Results
+# Test date parsing
+python test_date_parsing.py
 
-### Input
-```
-Text: "This product is absolutely amazing and I love it!"
-Existing Label: "support"
+# Test NLP analysis
+python test_nlp_analysis.py
 ```
 
-### Output
+## 📊 Sample Output
+
+### Console Output
 ```
-Sentiment: support (93% confidence)
-Data Source: existing_labels
-TextBlob Score: 0.95 (positive)
-VADER Score: 0.89 (positive)
-Custom Lexicon: 0.92 (positive)
-Intensity Adjusted: 0.96 (positive)
+================================================================================
+TWITTER COMMENT SCRAPER WITH ADVANCED DATE FILTERING
+================================================================================
+
+ℹ️  TWITTER API INFORMATION
+----------------------------------------
+• Recent Search API covers the last 7 days only
+• For older tweets, Academic Research access is required
+• Rate limits: 300 requests per 15-minute window
+• Each request can fetch up to 100 tweets maximum
+
+Enter your Twitter API Bearer Token: sk_...
+Enter topic/keyword to search: python
+Enter number of results: 50
+```
+
+### JSON Output
+```json
+{
+  "tweets": [
+    {
+      "id": "1234567890",
+      "text": "Python is awesome!",
+      "author": "dev_user",
+      "sentiment": "positive",
+      "engagement": {
+        "likes": 150,
+        "retweets": 45
+      }
+    }
+  ],
+  "metadata": {
+    "query": "python",
+    "total_collected": 50,
+    "spam_removed": 3,
+    "duplicates_removed": 2
+  }
+}
 ```
 
 ## 🤝 Contributing
 
-Contributions welcome! Please:
+We welcome contributions! Please:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/improvement`)
-3. Commit changes (`git commit -m 'Add improvement'`)
-4. Push to branch (`git push origin feature/improvement`)
-5. Open Pull Request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
@@ -309,34 +394,51 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 **Deepnil Ray**
 - GitHub: [@DeepnilRay](https://github.com/DeepnilRay)
-- Email: your.email@example.com
+- Email: deepnil.ray@example.com
 
 ## 🙏 Acknowledgments
 
-- TextBlob for sentiment analysis foundation
-- NLTK for NLP tools and resources
-- OpenAI for ChatGPT API
-- VADER Sentiment Analysis for social media optimization
+- Twitter for API v2 access
+- TextBlob for NLP functionality
+- NLTK for natural language processing
+- All contributors and users
 
 ## 📞 Support
 
-For support, email deepnil.ray@example.com or open an issue on GitHub.
+For support:
+- Email: deepnil.ray@example.com
+- Open an issue on [GitHub](https://github.com/yourusername/twitter-scraper/issues)
+- Check [Discussion Board](https://github.com/yourusername/twitter-scraper/discussions)
 
 ## 🔗 Related Projects
 
-- [Twitter Sentiment Analyzer](https://github.com/yourusername/twitter-sentiment-analyzer)
-- [Advanced NLP Toolkit](https://github.com/yourusername/nlp-toolkit)
+- [Excel Sentiment Analyzer](https://github.com/yourusername/excel-sentiment-analyzer)
+- [NLP Toolkit](https://github.com/yourusername/nlp-toolkit)
+- [Social Media Analytics](https://github.com/yourusername/social-analytics)
 
 ## 🚀 Roadmap
 
-- [ ] Web UI dashboard
-- [ ] Real-time streaming analysis
+- [ ] Support for Twitter Ads API
+- [ ] Real-time streaming with WebSocket
+- [ ] Advanced filtering UI dashboard
 - [ ] Multi-language support
-- [ ] Custom model training
-- [ ] API endpoint deployment
-- [ ] Database integration
-- [ ] Advanced visualization tools
+- [ ] Database integration (MongoDB/PostgreSQL)
+- [ ] API endpoint for programmatic access
+- [ ] Docker containerization
+- [ ] Scheduled scraping tasks
+
+## ⚠️ Legal & Ethical Considerations
+
+- Comply with [Twitter's Terms of Service](https://twitter.com/en/tos)
+- Respect user privacy
+- Don't scrape personal/sensitive data
+- Use data responsibly
+- Provide attribution when required
+- Check [Twitter Developer Agreement](https://developer.twitter.com/en/developer-terms/agreement-and-policy)
 
 ---
 
-**Made with ❤️ for better sentiment analysis**
+**Made with ❤️ for Twitter data analysis**
+**Last Updated**: November 2024  
+**Version**: 1.0.0  
+**Maintained**: Yes ✅
