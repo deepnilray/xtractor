@@ -394,7 +394,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 **Deepnil Ray**
 - GitHub: [@DeepnilRay](https://github.com/DeepnilRay)
-- Email: deepnil.ray@example.com
+- Email: deepnil.ray@gmail.com
 
 ## 🙏 Acknowledgments
 
